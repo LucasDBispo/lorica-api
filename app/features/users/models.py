@@ -15,3 +15,4 @@ class UserModel:
     role: Mapped[UserRoles] = mapped_column(
         SQLEnum(UserRoles, name="user_role"), default=UserRoles.USER, nullable=False
     )
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
