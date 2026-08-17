@@ -1,12 +1,20 @@
-from fastapi import APIRouter
+from typing import Annotated
 
-from .schemas import UserRead
+from fastapi import APIRouter, Depends
+
+from app.features.users.dependencies import create_user, get_all_users
+
+from .schemas import User, UserCreate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("/", response_model=list[UserRead])
+@router.get("/", response_model=list[User])
 async def get_users():
-    users = []
-
+    users = get_all_users()
     return users
+
+
+@router.post("/", response_model=UserCreate)
+async def create_new_user(user: Annotated[UserCreate, Depends(create_user)]):
+    return user
