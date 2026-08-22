@@ -17,11 +17,6 @@ class AdminSettings(BaseSettings):
 class JWTSettings(BaseSettings):
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: float = 30
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-
-db_settings = DBSettings()
-admin_settings = AdminSettings()
-jwt_settings = JWTSettings()

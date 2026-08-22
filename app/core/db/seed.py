@@ -1,41 +1,50 @@
 # seed file to create the first users
 
-from sqlalchemy import create_engine
+
 from sqlalchemy.orm import Session
 
-from app.core.config import admin_settings, db_settings
+from app.core.config import AdminSettings
+from app.core.db.database import SessionLocal
 from app.core.db.models import User
 from app.core.security import get_password_hash
+from app.features.users.roles import UserRoles
 
-engine = create_engine(db_settings.database_url, echo=True)
 
-
-# Seed query to create an admin user if none exists
-with Session(engine) as session:
-    selection = session.query(User).all()
-    if selection == []:
-        session.add(
+def seed_admin(db: Session):
+    admin_settings = AdminSettings()
+    admin_check = db.query(User).filter_by(role=UserRoles.ADMIN).first()
+    if admin_check is None:
+        db.add(
             User(
                 name="admin",
                 email=admin_settings.admin_email,
-                password=get_password_hash(admin_settings.admin_password),
-                role="admin",
+                password_hash=get_password_hash(admin_settings.admin_password),
+                role=UserRoles.ADMIN,
             )
         )
-        session.commit()
-session.close()
 
-# Seed query to create a regular user if none exists
-with Session(engine) as session:
-    selection = session.query(User).filter_by(role="USER").all()
-    if selection == []:
-        session.add(
+
+def seed_demo_user(db: Session):
+    demo_check = db.query(User).filter_by(is_demo=True).first()
+
+    if demo_check is None:
+        db.add(
             User(
-                name="user",
-                email="user@example.com",
-                password=get_password_hash("12345"),
-                role="user",
+                name="Demo Account",
+                email="demo@lorica.app",
+                password_hash=get_password_hash("lorica12345"),
+                role=UserRoles.USER,
+                is_demo=True,
             )
         )
-        session.commit()
-session.close()
+
+
+def seed():
+    with SessionLocal() as db:
+        seed_admin(db)
+        seed_demo_user(db)
+        db.commit()
+
+
+if __name__ == "__main__":
+    seed()
