@@ -31,3 +31,13 @@ def create_access_token(data: dict):
         algorithm=jwt_settings.jwt_algorithm,
     )
     return encoded_jwt
+
+
+def decode_access_token(token: str):
+    payload = jwt.decode(
+        jwt=token,
+        key=jwt_settings.jwt_secret_key,
+        algorithms=[jwt_settings.jwt_algorithm],
+    )
+    user_id = payload.get("sub")
+    return user_id

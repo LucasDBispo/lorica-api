@@ -1,39 +1,36 @@
 from typing import Annotated
 
-from fastapi import Depends
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
 
-from app.core.config import db_settings
+from app.core.db.database import get_db
 from app.core.db.models import User
-from app.core.security import get_password_hash
-from app.features.users.schemas import UserCreate
-
-engine = create_engine(db_settings.database_url, echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from app.core.security import decode_access_token, get_password_hash
+from app.features.users.roles import UserRoles
+from app.features.users.schemas import UserCreate, UserRead
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
+def create_user(
+    user_data: UserCreate,
+    db: Annotated[Session, Depends(get_db)],
+):
     db.add(
         User(
-            name=user.name,
-            email=user.email,
-            password=get_password_hash(user.password),
-            role="user",
+            name=user_data.name,
+            email=user_data.email,
+            password_hash=get_password_hash(user_data.password),
+            role=UserRoles.USER,
         )
     )
     db.commit()
-    return user
+    return UserRead(name=user_data.name, email=user_data.email)
 
 
-def get_current_user(db: Annotated[Session, Depends(get_db)]):
-    db_users = db.query(User).all()
-    return db_users
+def get_user_by_token(db: Session, token: str):
+    user_id = decode_access_token(token)
+
+    user_data = db.query(User).filter_by(id=int(user_id)).first()
+    if user_data is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserRead(name=user_data.name, email=user_data.email)
