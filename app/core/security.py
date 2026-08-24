@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 import jwt
+from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 
 from app.core.config import JWTSettings
@@ -18,7 +19,7 @@ def get_password_hash(password: str) -> str:
     return password_hash.hash(password)
 
 
-def create_access_token(data: dict):
+def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.now(UTC) + timedelta(
         minutes=jwt_settings.access_token_expire_minutes
@@ -31,3 +32,21 @@ def create_access_token(data: dict):
         algorithm=jwt_settings.jwt_algorithm,
     )
     return encoded_jwt
+
+
+def decode_access_token(token: str) -> int:
+
+    try:
+        payload = jwt.decode(
+            jwt=token,
+            key=jwt_settings.jwt_secret_key,
+            algorithms=[jwt_settings.jwt_algorithm],
+        )
+    except InvalidTokenError:
+        raise
+
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise InvalidTokenError
+
+    return int(user_id)
