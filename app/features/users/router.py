@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.core.db.database import get_db
+from app.core.rate_limit import limiter
 from app.features.auth.dependencies import oauth2_scheme
 from app.features.users.dependencies import create_user, get_user_by_token
 from app.features.users.schemas import UserCreate, UserRead
@@ -20,7 +21,9 @@ async def get_current_user(
 
 
 @router.post("/", status_code=201, response_model=UserRead)
+@limiter.limit("3/minute", error_message="Too many requests. Please try again later.")
 async def register_user(
+    request: Request,
     user_data: UserCreate,
     db: Annotated[Session, Depends(get_db)],
 ):
