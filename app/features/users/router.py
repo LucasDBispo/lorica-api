@@ -19,12 +19,6 @@ async def get_current_user(
     return get_user_by_token(db=db, token=token)
 
 
-@router.get("/", response_model=list[UserRead])
-async def get_users(token: Annotated[str, Depends(oauth2_scheme)]):
-    USERS = []
-    return USERS
-
-
 @router.post("/", status_code=201, response_model=UserRead)
 async def register_user(
     user_data: UserCreate,
