@@ -37,6 +37,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Initialize database
+        env:
+          DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/lorica_test
         run: |
           python -m app.core.db.init_db
           python -m app.core.db.seed
