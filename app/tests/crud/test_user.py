@@ -19,3 +19,4 @@ def test_create_user(db: Session) -> None:
     #assert user.is_demo is False
     #assert hasattr(user, "hashed_password")
     #assert user.hashed_password != password
+
