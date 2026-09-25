@@ -3,14 +3,6 @@ from pydantic import BaseModel
 from app.features.users.roles import UserRoles
 
 
-class User(BaseModel):
-    id_: int
-    name: str
-    email: str
-    password: str
-    role: UserRoles = "user"
-
-
 class UserCreate(BaseModel):
     name: str
     email: str
@@ -18,5 +10,10 @@ class UserCreate(BaseModel):
 
 
 class UserRead(BaseModel):
+    id_: int
     name: str
     email: str
+    role: UserRoles
+    is_demo: bool
+    is_active: bool 
+

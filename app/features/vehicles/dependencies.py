@@ -23,23 +23,24 @@ def create_vehicle(vehicle_data: VehicleCreate, token: str, db: Session):
     if vehicle_data.nickname is None:
         vehicle_data.nickname = create_default_vehicle_nickname(user_id, db)
 
+    vehicle =  Vehicle(
+                nickname=vehicle_data.nickname,
+                license_plate=vehicle_data.license_plate,
+                vehicle_type=vehicle_data.vehicle_type,
+                model=vehicle_data.model,
+                make=vehicle_data.make,
+                year=vehicle_data.year,
+                odometer=vehicle_data.odometer,
+                is_active=True,
+                owner_id=user_id,
+            )
     db.add(
-        Vehicle(
-            nickname=vehicle_data.nickname,
-            license_plate=vehicle_data.license_plate,
-            vehicle_type=vehicle_data.vehicle_type,
-            model=vehicle_data.model,
-            make=vehicle_data.make,
-            year=vehicle_data.year,
-            odometer=vehicle_data.odometer,
-            is_active=True,
-            owner_id=user_id,
-        )
+       vehicle
     )
     db.commit()
+    db.refresh(vehicle)
 
-    return vehicle_data
-
+    return vehicle
 
 def get_all_vehicles_by_user(token: str, db: Session):
     user_id = decode_access_token(token)

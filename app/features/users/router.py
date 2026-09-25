@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.core.db.database import get_db
+from app.core.db.models import User
 from app.core.rate_limit import limiter
 from app.features.auth.dependencies import oauth2_scheme
 from app.features.users.dependencies import create_user, get_user_by_token
@@ -20,11 +21,11 @@ async def get_current_user(
     return get_user_by_token(db=db, token=token)
 
 
-@router.post("/", status_code=201, response_model=UserRead)
+@router.post("/", status_code=201)
 @limiter.limit("3/minute", error_message="Too many requests. Please try again later.")
 async def register_user(
     request: Request,
-    user_data: UserCreate,
+    user_in: UserCreate,
     db: Annotated[Session, Depends(get_db)],
 ):
-    return create_user(user_data, db)
+    return create_user(user_in, db)
