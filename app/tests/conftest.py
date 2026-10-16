@@ -1,3 +1,4 @@
+import os
 from collections.abc import Generator
 
 import pytest
@@ -13,7 +14,7 @@ from app.features.users.schemas import UserCreate
 from app.main import app
 from app.tests.utils.utils import random_email, random_lower_string
 
-TEST_DATABASE_URL = "postgresql+psycopg://postgres:postgres@test-db:5432/lorica_db_test"
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql+psycopg://postgres:postgres@test-db:5432/lorica_db_test")
 
 
 @pytest.fixture(scope="session")
