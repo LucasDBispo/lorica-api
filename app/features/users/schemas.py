@@ -10,7 +10,7 @@ class UserCreate(BaseModel):
 
 
 class UserRead(BaseModel):
-    id_: int
+    id: int
     name: str
     email: str
     role: UserRoles

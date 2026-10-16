@@ -49,7 +49,9 @@ def get_all_vehicles_by_user(token: str, db: Session):
         select(Vehicle).where(Vehicle.owner_id == user_id)
     ).all()
 
-    user_vehicles = (
+    print (vehicle for vehicle in vehicles_query)
+
+    user_vehicles: list[VehicleRead] = [
         VehicleRead(
             id=vehicle.id,
             nickname=vehicle.nickname,
@@ -63,7 +65,8 @@ def get_all_vehicles_by_user(token: str, db: Session):
             owner_id=vehicle.owner_id,
         )
         for vehicle in vehicles_query
-    )
+    ]
+    print (user_vehicles)
     return user_vehicles
 
 

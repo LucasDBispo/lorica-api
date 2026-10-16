@@ -51,4 +51,4 @@ def get_user_by_token(db: Session, token: str):
     if user_data is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return UserRead(name=user_data.name, email=user_data.email, role=user_data.role, is_demo=user_data.is_demo, is_active=user_data.is_active)
+    return UserRead(id=user_data.id, name=user_data.name, email=user_data.email, role=user_data.role, is_demo=user_data.is_demo, is_active=user_data.is_active)

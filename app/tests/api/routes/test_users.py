@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from app.tests.utils.utils import random_email, random_lower_string
 
 

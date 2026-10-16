@@ -37,5 +37,23 @@ services:
       timeout: 5s
       retries: 10
 
+  test-db:
+    image: postgres:17.6
+    container_name: lorica-db-test
+    environment:
+      POSTGRES_DB: lorica_db_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/test_data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lorica_db_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
 volumes:
   postgres_data:

@@ -5,7 +5,6 @@ class DBSettings(BaseSettings):
     database_url: str = (
         "postgresql+psycopg://postgres:postgres@postgres:5432/lorica_dev"
     )
-
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
