@@ -1,5 +1,5 @@
 services:
-  app:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,9 +15,9 @@ services:
     restart: unless-stopped
     command:  >
       sh -c "
-        python -m app.core.db.init_db &&
-        python -m app.core.db.seed &&
-        uvicorn app.main:app --host 0.0.0.0 --port 8000
+        python -m src.core.db.init_db &&
+        python -m src.core.db.seed &&
+        uvicorn src.main:app --host 0.0.0.0 --port 8000
       "
   postgres:
     image: postgres:17.6
