@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from src.api.dependencies import get_db, oauth2_scheme
+from src.api.dependencies import get_current_user, get_db, oauth2_scheme
+from src.core.db.models import User
 from src.repositories.vehicle import (
     create_vehicle,
     delete_vehicle_by_id,
@@ -20,9 +21,9 @@ router = APIRouter(prefix="/vehicles", tags=["Vehicles"])
 def register_vehicle(
     vehicle_data: VehicleCreate,
     db: Annotated[Session, Depends(get_db)],
-    token: Annotated[str, Depends(oauth2_scheme)],
+    user: Annotated[User, Depends(get_current_user)],
 ):
-    return create_vehicle(vehicle_data, token, db)
+    return create_vehicle(vehicle_data=vehicle_data, user=user, db=db)
 
 
 @router.get("/{vehicle_id}")
@@ -36,10 +37,10 @@ def get_vehicle(
 
 @router.get("/")
 def get_all_user_vehicles(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
-    return get_all_vehicles_by_user(token, db)
+    return get_all_vehicles_by_user(user = user, db=db)
 
 
 @router.patch("/{vehicle_id}")

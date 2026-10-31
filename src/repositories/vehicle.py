@@ -1,20 +1,21 @@
-from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from typing import Annotated
+
+from fastapi import Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from src.core.db.models import Vehicle
+from src.api.dependencies import get_current_user
+from src.core.db.models import User, Vehicle
 from src.core.security import decode_access_token
 from src.schemas.vehicle import VehicleCreate, VehicleRead, VehicleUpdate
 from src.services.vehicle import create_default_vehicle_nickname
 
 
-
-
-def create_vehicle(vehicle_data: VehicleCreate, token: str, db: Session):
-    user_id = decode_access_token(token)
+def create_vehicle(vehicle_data: VehicleCreate, user: Annotated[User, Depends(get_current_user)], db: Session):
 
     if vehicle_data.nickname is None:
-        vehicle_data.nickname = create_default_vehicle_nickname(user_id, db)
+        vehicle_data.nickname = create_default_vehicle_nickname(user_id = user.id, db = db)
 
     vehicle =  Vehicle(
                 nickname=vehicle_data.nickname,
@@ -25,21 +26,26 @@ def create_vehicle(vehicle_data: VehicleCreate, token: str, db: Session):
                 year=vehicle_data.year,
                 odometer=vehicle_data.odometer,
                 is_active=True,
-                owner_id=user_id,
+                owner_id=user.id,
             )
-    db.add(
-       vehicle
-    )
-    db.commit()
-    db.refresh(vehicle)
+
+    try: 
+        db.add(
+        vehicle
+        )
+        db.commit()
+        db.refresh(vehicle)
+    except IntegrityError as exc:
+        db.rollback()
+        if exc.orig.diag.constraint_name == "vehicles_owner_id_fkey":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user. Please try again.")
 
     return vehicle
 
-def get_all_vehicles_by_user(token: str, db: Session):
-    user_id = decode_access_token(token)
+def get_all_vehicles_by_user(user: Annotated[User, Depends(get_current_user)], db: Session):
 
     vehicles_query = db.scalars(
-        select(Vehicle).where(Vehicle.owner_id == user_id)
+        select(Vehicle).where(Vehicle.owner_id == user.id)
     ).all()
 
     user_vehicles: list[VehicleRead] = [
